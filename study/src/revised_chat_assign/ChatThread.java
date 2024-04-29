@@ -7,7 +7,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.*;
 
-import static Chatting.CommandSet.COMMAND_SET;
+import static revised_chat_assign.CommandSet.COMMAND_SET;
 
 public class ChatThread extends Thread {
     private final Socket socket;
