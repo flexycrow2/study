@@ -7,7 +7,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.*;
 
-import static revised_chat_assign.CommandSet.COMMAND_SET;
+import static Chatting.CommandSet.COMMAND_SET;
 
 public class ChatThread extends Thread {
     private final Socket socket;
@@ -104,36 +104,6 @@ public class ChatThread extends Thread {
         out.println(msg);
     }
 
-    // 추가 기능 - 메시지를 특정 사용자한테만 보내는 메서드(귓속말)
-    public void whisper(String msg) {
-        int firstSpaceIndex = msg.indexOf(" ");
-        if (firstSpaceIndex == -1) {     // 공백이 없다면
-            sendMsgToThisClient("명령어를 올바른 형식으로 써주시기 바랍니다.\n" +
-                    "ex) /whisper id msg\n");
-            return;
-        }
-
-        int secondSpaceIndex = msg.indexOf(" ", firstSpaceIndex + 1);
-        if (secondSpaceIndex == -1) {     // 두번 째 공백이 없다는 것도 메시지가 잘못된 것
-            sendMsgToThisClient("명령어를 올바른 형식으로 써주시기 바랍니다.\n" +
-                    "ex) /whisper id msg\n");
-            return;
-        }
-
-        String to = msg.substring(firstSpaceIndex + 1, secondSpaceIndex);
-        String message = msg.substring(secondSpaceIndex + 1);
-
-        synchronized (chatClients) {
-            // to가 존재하는 사용자인가?
-            if (!chatClients.containsKey(to)) {
-                sendMsgToThisClient("'" + to + "'님은 존재하지 않는 사용자입니다.\n");
-            } else {
-                PrintWriter pw = chatClients.get(to);
-                pw.println("(귓속말) " + nickName + " : " + message + "\n");
-            }
-        }
-    }
-
     // 기본 기능 - 메시지를 같은 방(로비) 내 사용자들에게 보내는 메서드
     public void sendMsgToSameRoomClients(int roomNum, String msg) {
         synchronized (chatClients) {
@@ -152,7 +122,7 @@ public class ChatThread extends Thread {
         }
     }
 
-    // 기본 기능 - 방 목록 보기
+    // 기본 기능 - 방 목록 보기(/list)
     public void showRoomList() {
         StringBuilder sb = new StringBuilder();
 
@@ -175,7 +145,7 @@ public class ChatThread extends Thread {
         }
     }
 
-    // 기본 기능 - 방 생성 메서드
+    // 기본 기능 - 방 생성 메서드(/create)
     public void createRoom() {
         // 사용자가 이미 방에 들어와 있는 경우
         if (roomNumber != 0) {
@@ -211,7 +181,7 @@ public class ChatThread extends Thread {
                 "[" + roomNumber + "]번 방에 입장했습니다.\n");
     }
 
-    // 기본 기능 - 방 입장
+    // 기본 기능 - 방 입장(/join)
     public void joinRoom(String num) {
         int roomNum;
 
@@ -286,6 +256,36 @@ public class ChatThread extends Thread {
         }
         sb.append("--------------------------------\n");
         sendMsgToThisClient(String.valueOf(sb));
+    }
+
+    // 추가 기능 - 메시지를 특정 사용자한테만 보내는 메서드(/whisper)
+    public void whisper(String msg) {
+        int firstSpaceIndex = msg.indexOf(" ");
+        if (firstSpaceIndex == -1) {     // 공백이 없다면
+            sendMsgToThisClient("명령어를 올바른 형식으로 써주시기 바랍니다.\n" +
+                    "ex) /whisper id msg\n");
+            return;
+        }
+
+        int secondSpaceIndex = msg.indexOf(" ", firstSpaceIndex + 1);
+        if (secondSpaceIndex == -1) {     // 두번 째 공백이 없다는 것도 메시지가 잘못된 것
+            sendMsgToThisClient("명령어를 올바른 형식으로 써주시기 바랍니다.\n" +
+                    "ex) /whisper id msg\n");
+            return;
+        }
+
+        String to = msg.substring(firstSpaceIndex + 1, secondSpaceIndex);
+        String message = msg.substring(secondSpaceIndex + 1);
+
+        synchronized (chatClients) {
+            // to가 존재하는 사용자인가?
+            if (!chatClients.containsKey(to)) {
+                sendMsgToThisClient("'" + to + "'님은 존재하지 않는 사용자입니다.\n");
+            } else {
+                PrintWriter pw = chatClients.get(to);
+                pw.println("(귓속말) " + nickName + " : " + message + "\n");
+            }
+        }
     }
 
     // 기본 기능 - 방 나가기(/exit)
